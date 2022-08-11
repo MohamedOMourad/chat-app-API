@@ -5,13 +5,17 @@ import cors from "cors";
 import morgan from "morgan";
 import helmet from "helmet";
 import { AppDataSource } from './Db/conection';
+import userRouter from "./Route/User";
+
 const app = express();
+
 config();
 app.use(cors());
 app.use(morgan("dev"));
 app.use(helmet());
 app.use(json());
 app.use(urlencoded({ extended: false }));
+app.use('/user', userRouter)
 
 
 app.get("/", (req, res) => {
