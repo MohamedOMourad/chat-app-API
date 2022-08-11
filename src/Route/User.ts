@@ -1,8 +1,9 @@
 import axios from "axios";
 import express from "express";
 import { User } from "../Entity/User";
-import { createUserValiation } from "../Utils/validation";
+import { createUserValiation, loginValiation } from "../Utils/userFunctionality";
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken'
 
 const userRouter = express.Router();
 
@@ -22,7 +23,7 @@ userRouter.post('/signup', async (req, res) => {
         const data = await axios.get('https://randomuser.me/api/')
         const imgUrl = data.data.results["0"].picture.thumbnail;
 
-        const {firstName, lastName, email, password} = req.body;
+        const { firstName, lastName, email, password } = req.body;
 
         if (createUserValiation(firstName, lastName, email, password, res)) {
             const hashedPassword = await bcrypt.hash(password, 7);
@@ -34,6 +35,29 @@ userRouter.post('/signup', async (req, res) => {
         }
         else {
             createUserValiation(firstName, lastName, email, password, res);
+        }
+    } catch (error) {
+        console.log(error)
+    }
+})
+
+userRouter.get('/login', async (req, res) => {
+    try {
+        const { email, password } = req.headers;
+        if (loginValiation(email as string, password as string, res)) {
+            const user = await User.findOne({ where: { email: email as string } })
+            if (!user) return res.status(404).send("incorect email or password!");
+            const match = await bcrypt.compare(password as string, user!.password);
+            if (match) {
+                const token = jwt.sign({ email }, process.env.jwt_secret_key!, { expiresIn: "24h" })
+                res.status(200).send({ token });
+            }
+            else {
+                res.status(401).send("Wrong email or password!");
+            }
+        }
+        else {
+            loginValiation(email as string, password as string, res)
         }
     } catch (error) {
         console.log(error)
