@@ -46,7 +46,7 @@ userRouter.get('/login', async (req, res) => {
         const { email, password } = req.headers;
         if (loginValiation(email as string, password as string, res)) {
             const user = await User.findOne({ where: { email: email as string } })
-            if (!user) return res.status(404).send("incorect email or password!");
+            if (!user) return res.status(401).send("incorect email or password!");
             const match = await bcrypt.compare(password as string, user!.password);
             if (match) {
                 const token = jwt.sign({ email }, process.env.jwt_secret_key!, { expiresIn: "24h" })
@@ -64,83 +64,15 @@ userRouter.get('/login', async (req, res) => {
     }
 })
 
-// userRouter.get("/:id", async (req, res) => {
-//     try {
-//         const id = +req.params.id;
-//         const order = await Order.findOne({
-//             where: { id },
-//             relations: { orderLine: true }
-//         });
-//         if (!order) return res.status(404).send("posts not found!");
-//         order.completed = true;
-//         await order.save();
-//         res.status(200).send({ data: order });
-//     } catch (e) {
-//         res.status(500).send(e);
-//     }
-// });
-
-// userRouter.post("/", async (req, res) => {
-//     try {
-//         console.log(req.body);
-//         const { firstName, lastName, mobNum, city, address, ordersCart } = req.body;
-//         if (!firstName || !lastName || !mobNum || !city || !address || ordersCart.length < 0) return res.status(401).send("missing data");
-//         const order = Order.create({
-//             firstName,
-//             lastName,
-//             mobNum,
-//             city,
-//             address,
-//         })
-//         if (!order) return res.status(404).send("order not found!");
-
-//         await order.save();
-
-//         for (let i = 0; i < ordersCart?.length; i++) {
-//             let orderLine = OrderLine.create(
-//                 {
-//                     quantity: ordersCart[i].quantity,
-//                     product: ordersCart[i].id,
-//                     order
-//                 }
-//             )
-//             await orderLine.save()
-//         };
-
-//         res.status(201).send({ data: order })
-//     } catch (e) {
-//         console.log(e);
-//         res.status(500).send(e);
-//     }
-// });
-
-// userRouter.patch("/:id", async (req, res) => {
-//     const { id } = req.params;
-//     if (!id) {
-//         return res.status(400).send({ message: "OrderId is required as params!" });
-//     }
-//     try {
-//         const order = await Order.findOne({ where: { id: +id } });
-//         if (!order) {
-//             return res.status(404).send({ message: "Order is not found!" });
-//         }
-//         order.completed = true;
-//         await order.save();
-//         res.send({ order })
-//     } catch (e) {
-//         res.status(500).send({ error: "Server is down!" });
-//     }
-// });
-
-// userRouter.delete("/:id", async (req, res) => {
-//     try {
-//         const id = +req.params.id;
-//         const order = await Order.delete(id);
-//         if (!order) return res.status(404).send("posts not found!");
-//         res.status(200).send("delted succefully!");
-//     } catch (e) {
-//         res.status(500).send();
-//     }
-// });
-
+userRouter.get('/me', async (req, res) => {
+    try {
+        const { token } = req.headers;
+        const { email } = jwt.verify(token as string, process.env.jwt_secret_key!) as { email: string };
+        const user = await User.findOne({ where: { email: email } });
+        if (!user) return res.status(404).send("user not found!");
+        res.status(200).send({ user });
+    } catch (error) {
+        console.log(error)
+    }
+});
 export default userRouter;
