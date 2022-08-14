@@ -27,11 +27,14 @@ userRouter.post('/signup', async (req, res) => {
 
         if (createUserValiation(firstName, lastName, email, password, res)) {
             const hashedPassword = await bcrypt.hash(password, 7);
+
             const user = User.create({
                 firstName, lastName, email, imgUrl, password: hashedPassword
             });
             await user.save();
-            res.status(200).send({ data: user });
+
+            const token = jwt.sign({ email }, process.env.jwt_secret_key!, { expiresIn: "24h" })
+            res.status(200).send({ token });
         }
         else {
             createUserValiation(firstName, lastName, email, password, res);
@@ -44,9 +47,11 @@ userRouter.post('/signup', async (req, res) => {
 userRouter.get('/login', async (req, res) => {
     try {
         const { email, password } = req.headers;
+
         if (loginValiation(email as string, password as string, res)) {
             const user = await User.findOne({ where: { email: email as string } })
             if (!user) return res.status(401).send("incorect email or password!");
+
             const match = await bcrypt.compare(password as string, user!.password);
             if (match) {
                 const token = jwt.sign({ email }, process.env.jwt_secret_key!, { expiresIn: "24h" })
@@ -67,9 +72,12 @@ userRouter.get('/login', async (req, res) => {
 userRouter.get('/me', async (req, res) => {
     try {
         const { token } = req.headers;
+
         const { email } = jwt.verify(token as string, process.env.jwt_secret_key!) as { email: string };
+
         const user = await User.findOne({ where: { email: email } });
         if (!user) return res.status(404).send("user not found!");
+
         res.status(200).send({ user });
     } catch (error) {
         console.log(error)
