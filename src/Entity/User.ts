@@ -1,4 +1,6 @@
-import { Column, Entity, OneToMany, } from "typeorm";
+import { Column, Entity, JoinTable, ManyToMany, OneToMany, } from "typeorm";
+import { Chat } from "./Chat";
+import { Message } from "./Message";
 import { Super } from "./Super";
 
 @Entity()
@@ -18,4 +20,7 @@ export class User extends Super {
 
     @Column({ nullable: true })
     imgUrl: string;
+
+    @OneToMany(() => Message, (messages) => messages.user)
+    messages: Message[];
 }
