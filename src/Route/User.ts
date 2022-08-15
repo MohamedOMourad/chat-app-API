@@ -1,9 +1,9 @@
 import axios from "axios";
 import express from "express";
 import { User } from "../Entity/User";
-import { createUserValiation, loginValiation } from "../Utils/userFunctionality";
+import { createUserValiation, loginValiation, userMiddlelware } from "../Utils/userFunctionality";
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken'
+import jwt from 'jsonwebtoken';
 
 const userRouter = express.Router();
 
@@ -54,7 +54,7 @@ userRouter.get('/login', async (req, res) => {
 
             const match = await bcrypt.compare(password as string, user!.password);
             if (match) {
-                const token = jwt.sign({ email }, process.env.jwt_secret_key!, { expiresIn: "24h" })
+                const token = jwt.sign({ email }, process.env.jwt_secret_key!, { expiresIn: "1s" })
                 res.status(200).send({ token });
             }
             else {
@@ -69,18 +69,11 @@ userRouter.get('/login', async (req, res) => {
     }
 })
 
-userRouter.get('/me', async (req, res) => {
+userRouter.get('/me', userMiddlelware, async (req, res) => {
     try {
-        const { token } = req.headers;
-
-        const { email } = jwt.verify(token as string, process.env.jwt_secret_key!) as { email: string };
-
-        const user = await User.findOne({ where: { email: email } });
-        if (!user) return res.status(404).send("user not found!");
-
-        res.status(200).send({ user });
+        res.status(200).json(req.body.user);
     } catch (error) {
-        console.log(error)
+        res.status(400).send(error)
     }
 });
 export default userRouter;
