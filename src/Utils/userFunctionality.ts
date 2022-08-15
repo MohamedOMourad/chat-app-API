@@ -1,5 +1,21 @@
-import { User } from "../Entity/User"
+import { NextFunction, Request, Response } from "express";
+import jwt from 'jsonwebtoken';
+import { User } from "../Entity/User";
 
+export const userMiddlelware = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { token } = req.headers
+        if (!token) return res.status(401).send("untharize request");
+        const { email } = jwt.verify(token as string, process.env.jwt_secret_key!) as { email: string };
+        console.log(email)
+        if (!email) return res.status(401).send("token is expired or unavailable")
+        const user = await User.findOne({ where: { email } })
+        req.body.user = user;
+        next()
+    } catch (error) {
+        res.status(400).send(error)
+    }
+}
 export const createUserValiation = (firstName: string, lastName: string, email: string, password: string, res: any) => {
     if (!firstName) return res.status(406).send("First Name is required!")
     else if (!lastName) return res.status(406).send("Last Name is required!")
