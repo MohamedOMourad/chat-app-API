@@ -6,6 +6,9 @@ import morgan from "morgan";
 import helmet from "helmet";
 import { AppDataSource } from './Db/conection';
 import userRouter from "./Route/User";
+import http from 'http';
+import { Server } from "socket.io";
+import { Message } from "./Entity/Message";
 
 const app = express();
 
@@ -16,6 +19,27 @@ app.use(helmet());
 app.use(json());
 app.use(urlencoded({ extended: false }));
 app.use('/user', userRouter)
+
+const server = http.createServer(app);
+
+server.listen(5001, async () => {
+    try {
+        console.log("socket is connected")
+    } catch (error) {
+        throw new Error(`${(error as Error).message}`)
+    }
+})
+export const io = new Server(server, {
+    cors: {
+        origin: '*',
+        methods: ["GET", "POST"]
+    }
+});
+
+io.on("connection", (socket) => {
+    socket.emit('chatMessage', { body: "heloofrom back" });
+});
+
 
 
 app.get("/", (req, res) => {
@@ -33,3 +57,4 @@ app.listen(process.env.PORT, async () => {
         throw new Error(`${(error as Error).message}`)
     }
 })
+
