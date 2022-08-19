@@ -23,4 +23,7 @@ export class User extends Super {
 
     @OneToMany(() => Message, (messages) => messages.user)
     messages: Message[];
+
+    @ManyToMany(() => Chat, (chat) => chat.users)
+    chats: Chat[]
 }

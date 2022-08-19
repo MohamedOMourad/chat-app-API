@@ -1,7 +1,7 @@
 import axios from "axios";
 import express from "express";
 import { User } from "../Entity/User";
-import { createUserValiation, loginValiation, userMiddlelware } from "../Utils/userFunctionality";
+import { createUserValiation, loginValiation, reqAuth, userMiddlelware } from "../Utils/userFunctionality";
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
@@ -54,7 +54,7 @@ userRouter.get('/login', async (req, res) => {
 
             const match = await bcrypt.compare(password as string, user!.password);
             if (match) {
-                const token = jwt.sign({ email }, process.env.jwt_secret_key!, { expiresIn: "1s" })
+                const token = jwt.sign({ email }, process.env.jwt_secret_key!, { expiresIn: "24h" })
                 res.status(200).send({ token });
             }
             else {
@@ -69,9 +69,9 @@ userRouter.get('/login', async (req, res) => {
     }
 })
 
-userRouter.get('/me', userMiddlelware, async (req, res) => {
+userRouter.get('/me', userMiddlelware, async (req:reqAuth, res) => {
     try {
-        res.status(200).json(req.body.user);
+        res.status(200).json(req.user);
     } catch (error) {
         res.status(400).send(error)
     }
