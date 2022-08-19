@@ -6,9 +6,9 @@ import morgan from "morgan";
 import helmet from "helmet";
 import { AppDataSource } from './Db/conection';
 import userRouter from "./Route/User";
+import chatRouter from "./Route/Chat";
 import http from 'http';
 import { Server } from "socket.io";
-import { Message } from "./Entity/Message";
 
 const app = express();
 
@@ -19,6 +19,7 @@ app.use(helmet());
 app.use(json());
 app.use(urlencoded({ extended: false }));
 app.use('/user', userRouter)
+app.use('/chat', chatRouter)
 
 const server = http.createServer(app);
 
@@ -29,10 +30,10 @@ server.listen(5001, async () => {
         throw new Error(`${(error as Error).message}`)
     }
 })
-export const io = new Server(server, {
+
+const io = new Server(server, {
     cors: {
         origin: '*',
-        methods: ["GET", "POST"]
     }
 });
 
@@ -45,11 +46,13 @@ io.on("connection", (socket) => {
 app.get("/", (req, res) => {
     res.status(200).send('How You Doin');
 });
+
 app.get("/*", (req, res) => {
     res.status(404).send({ error: "End Point NOt Found!" });
 });
 
 app.listen(process.env.PORT, async () => {
+    console.log(`running on port ${process.env.PORT}`)
     try {
         await AppDataSource.initialize();
         console.log(`connected to the database`)

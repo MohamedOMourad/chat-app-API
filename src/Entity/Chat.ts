@@ -11,7 +11,7 @@ export class Chat extends Super {
     @OneToMany(() => Message, (messages) => messages.chat)
     messages: Message[];
 
-    @ManyToMany(() => User)
-    @JoinTable({ name:"chat_users"})
+    @ManyToMany(() => User,(user)=>user.chats)
+    @JoinTable()
     users: User[]
 }
