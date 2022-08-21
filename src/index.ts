@@ -7,6 +7,7 @@ import helmet from "helmet";
 import { AppDataSource } from './Db/conection';
 import userRouter from "./Route/User";
 import chatRouter from "./Route/Chat";
+import messageRouter from "./Route/Message";
 import http from 'http';
 import { Server } from "socket.io";
 
@@ -20,6 +21,7 @@ app.use(json());
 app.use(urlencoded({ extended: false }));
 app.use('/user', userRouter)
 app.use('/chat', chatRouter)
+app.use('/message', messageRouter)
 
 const server = http.createServer(app);
 
