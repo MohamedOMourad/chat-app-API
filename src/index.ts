@@ -11,7 +11,7 @@ import messageRouter from "./Route/Message";
 import http from 'http';
 import { Server } from "socket.io";
 
-const app = express();
+export const app = express();
 
 config();
 app.use(cors());
@@ -40,8 +40,23 @@ const io = new Server(server, {
 });
 
 io.on("connection", (socket) => {
-    socket.emit('chatMessage', { body: "heloofrom back" });
+    console.log(`user ${socket.id} connected`)
+    socket.on('joiningRoom', (id) => {
+        console.log(`joining Room ${id.id}`)
+        socket.join(id.id)
+    })
+    socket.on('sendMessage', (message) => {
+        console.log(message)
+        io.to(message.chat.id.toString()).emit('recivedMessage', message)
+    })
 });
+
+// io.on("connection", (socket) => {
+//     socket.on('sendMessage', (val) => {
+//         console.log(val)
+//         io.emit('reciveMessage', val);
+//     });
+// });
 
 
 
