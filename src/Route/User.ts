@@ -69,7 +69,7 @@ userRouter.get('/login', async (req, res) => {
     }
 })
 
-userRouter.get('/me', userMiddlelware, async (req:reqAuth, res) => {
+userRouter.get('/me', userMiddlelware, async (req: reqAuth, res) => {
     try {
         res.status(200).json(req.user);
     } catch (error) {
