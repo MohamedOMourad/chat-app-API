@@ -27,7 +27,7 @@ const server = http.createServer(app);
 
 server.listen(5001, async () => {
     try {
-        console.log("socket is connected")
+        console.log("socket server is listening")
     } catch (error) {
         throw new Error(`${(error as Error).message}`)
     }
@@ -40,25 +40,21 @@ const io = new Server(server, {
 });
 
 io.on("connection", (socket) => {
+
     console.log(`user ${socket.id} connected`)
+
     socket.on('joiningRoom', (id) => {
-        console.log(`joining Room ${id.id}`)
-        socket.join(id.id)
+        console.log(`joining Room ${id.toString()}`)
+        socket.join(id.toString())
     })
-    socket.on('sendMessage', (message) => {
-        console.log(message)
-        io.to(message.chat.id.toString()).emit('recivedMessage', message)
+
+    socket.on('sendMessage', (val) => {
+        console.log(val)
+        val.userIds.forEach((id: number) => {
+            io.to(id.toString()).emit('recivedMessage', val.message)
+        })
     })
 });
-
-// io.on("connection", (socket) => {
-//     socket.on('sendMessage', (val) => {
-//         console.log(val)
-//         io.emit('reciveMessage', val);
-//     });
-// });
-
-
 
 app.get("/", (req, res) => {
     res.status(200).send('How You Doin');

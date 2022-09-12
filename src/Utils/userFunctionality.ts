@@ -8,7 +8,7 @@ export interface reqAuth extends Request {
 
 export const userMiddlelware = async (req: reqAuth, res: Response, next: NextFunction) => {
     try {
-        const { token } = req.headers
+        const { token } = req.headers;
         if (!token) return res.status(401).send("untharize request");
         const { email } = jwt.verify(token as string, process.env.jwt_secret_key!) as { email: string };
         if (!email) return res.status(401).send("token is expired or unavailable")
@@ -16,7 +16,7 @@ export const userMiddlelware = async (req: reqAuth, res: Response, next: NextFun
         req.user = user!;
         next()
     } catch (error) {
-        res.status(400).send(error)
+        res.status(404).send(error)
     }
 }
 

@@ -20,7 +20,6 @@ const addChatsImg = (user: User, chats: Chat[]) => {
 
 chatRouter.get("/", userMiddlelware, async (req: reqAuth, res) => {
     try {
-
         const user = req.user!;
 
         let { chats } = (await User.findOne({
@@ -30,6 +29,16 @@ chatRouter.get("/", userMiddlelware, async (req: reqAuth, res) => {
 
         const returnChats = addChatsImg(user, chats)
         res.status(200).json({ data: returnChats });
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ error });
+    }
+});
+chatRouter.get("/:id", async (req, res) => {
+    try {
+        const id = + req.params.id;
+        let chat = await Chat.findOne({ where: { id }, relations: { users: true } })
+        res.status(200).json({ data: chat });
     } catch (error) {
         console.log(error)
         res.status(500).json({ error });
